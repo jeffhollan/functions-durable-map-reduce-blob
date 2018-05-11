@@ -75,24 +75,13 @@ namespace FunctionApp8
         [FunctionName("CalculateMostUsed")]
         public static IEnumerable<string> CalculateMostUsed([ActivityTrigger] string[] stickers, TraceWriter log)
         {
-            Dictionary<string, int> counts = new Dictionary<string, int>();
-            foreach (var sticker in stickers)
-            {
-                var words = sticker.Split(' ');
-                foreach (var word in words)
-                {
-                    int count;
-                    if(counts.TryGetValue(word, out count))
-                    {
-                        counts[word] = count++;
-                    } else
-                    {
-                        counts[word] = 1;
-                    }
-                }
-            }
+            var sortedDict =
+                from sticker in stickers
+                from word in sticker.Split(' ')
+                group word by word into wordGroup
+                orderby wordGroup.Count() descending
+                select wordGroup.Key;
 
-            var sortedDict = from w in counts orderby w.Value descending select w.Key;
             return sortedDict.Take(5);
         }
 
